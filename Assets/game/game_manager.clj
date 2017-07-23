@@ -5,4 +5,5 @@
         game.board))
 
 (defn game-awake [go]
-  (setup-scene! 1 (state go :board-manager)))
+  (setup-scene! (state go :level)
+                (state go :board-manager)))

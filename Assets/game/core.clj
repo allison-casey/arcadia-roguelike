@@ -5,12 +5,6 @@
 (defn new-extrema [min max]
   {:minimum min :maximum max})
 
-(def columns 8)
-(def rows 8)
-
-(def wall-count (new-extrema 5 9))
-(def food-count (new-extrema 1 5))
-
 (defn get-object
   "Gets the GameObject referenced by GameObjectRef"
   [go-ref]
@@ -107,17 +101,6 @@
              (pop positions)
              (conj game-objects (instantiate (last objects) (last positions) (qidentity)))))))
 
-(defn board-setup! [board-holder floor-tiles outer-wall-tiles]
-  (let [outer-wall-positions (square-outline-points -1 columns -1 rows)
-        outer-wall-objects (random-selection outer-wall-tiles (+ columns columns rows rows 4))
-        floor-positions (square-points 0 columns 0 rows)
-        floor-objects (random-selection floor-tiles (* columns rows))]
-    (do
-      (set-parent-go-list! (layout-objects! outer-wall-objects outer-wall-positions)
-                           board-holder)
-      (set-parent-go-list! (layout-objects! floor-objects floor-positions)
-                           board-holder))))
-
 (defn layout-objects-lists!
   "Takes multiple object lists and calls layout-objects on each carrying
    over the remaining points to each call"
@@ -130,36 +113,9 @@
         (layout-objects! object-list (subvec points 0 object-length))
         (recur (pop object-lists) (subvec points object-length))))))
 
-(defn setup-scene! [level board-manager]
-  (let [floor-tiles (state-list board-manager :floor-tiles)
-        outer-wall-tiles (state-list board-manager :outer-wall-tiles)
-        wall-tiles (state-list board-manager :wall-tiles)
-        food-tiles (state-list board-manager :food-tiles)
-        enemy-tiles (state-list board-manager :enemy-tiles)
-        exit (state-obj board-manager :exit-ref)
-        board (state-obj board-manager :board-holder-ref)
-        enemy-count (log-b level 2)
-        positions (shuffle (square-points 1 (- columns 2)
-                                          1 (- rows 2)))]
-    (do (board-setup! board floor-tiles outer-wall-tiles)
-        (layout-objects-lists!
-         [(random-selection food-tiles (rand-int-extrema food-count))
-          (random-selection wall-tiles (rand-int-extrema wall-count))
-          (random-selection enemy-tiles enemy-count)]
-         positions)
-        (instantiate exit (v3 (dec columns) (dec rows) 0) (qidentity))
-        )))
 
-(defn board-start [go]
-  (setup-scene! 1 go))
 
-;; Examples
-(comment (defn board-start [gameobject]
-   (doall (for [x (range 8)]
-            ((instantiate                                   
-               (.. UnityEngine.Resources (Load (nth wallNames x)))
-                 (v3 x x 0)
-                 (.. UnityEngine.Quaternion identity)))))))
+
 
 (defn collision-example [go collision]
   (arcadia.core/log (.. go name)

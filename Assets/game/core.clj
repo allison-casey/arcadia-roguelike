@@ -2,6 +2,16 @@
   (:use arcadia.core
         arcadia.linear))
 
+(def epsilon (. System.Single Epsilon))
+
+(defn delta-time []
+  (.deltaTime UnityEngine.Time))
+
+(defn move-towards [start end step]
+  (.MoveTowards UnityEngine.Vector3 start end step))
+
+
+
 (defn new-extrema [min max]
   {:minimum min :maximum max})
 

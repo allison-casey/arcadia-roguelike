@@ -124,7 +124,15 @@
         (recur (pop object-lists) (subvec points object-length))))))
 
 
-
+(defn coroutine
+  "Function for running Unity Coroutines from Arcadia
+   The given gameobject and value will be passed to the function f
+   on every loop of the coroutine, waiting the given wait time between
+   each iteration.  This function requires that a single Corouiner component
+   is added somewhere in the scene.  The given function f should return a boolean
+   of false when the coroutine should stop."
+  [gameobject f wait value]
+  (.. Coroutiner instance (runCoroutine gameobject f wait value)))
 
 
 (defn collision-example [go collision]

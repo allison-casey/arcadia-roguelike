@@ -8,31 +8,42 @@ using clojure.lang;
  * 
  * Example Clojure Arcadia call:
  * 
- * (.runCoroutine a-coroutiner-component go #'the-fn 1.0)
+ * (coroutine go #'the-fn 1.0)
  * 
  * The Clojure function should return a boolean of false to signal that the coroutine should stop
  * 
  */
 public class Coroutiner : MonoBehaviour
 {
-	/**
-	 * @param go        The gameobject context to pass to the clojure function
-	 * @param fn        The clojure function
-	 * @param waitTime  The wait time in seconds to pause the coroutine
-	 * @param arg1      Any argument for the clojure fn
-	 */
-	public void runCoroutine(GameObject go, IFn fn, float waitTime, object arg1) {
-		StartCoroutine(run (go, fn, waitTime, arg1));
-	}
+    public static Coroutiner instance;
 
-	public IEnumerator run(GameObject go, IFn fn, float waitTime, object arg1) {
-		WaitForSeconds wfs = new WaitForSeconds (waitTime);
-		bool continueRunning = true;
-		while (continueRunning) {
-			continueRunning = (bool)fn.invoke(go, arg1);
-			yield return wfs;
-		}
-	}
+    public void Awake() {
+        if (instance != null) {
+            Destroy(gameObject);
+        } else {
+            instance = this;
+        }
+        DontDestroyOnLoad(gameObject);
+    }
+
+    /**
+     * @param go        The gameobject context to pass to the clojure function
+     * @param fn        The clojure function
+     * @param waitTime  The wait time in seconds to pause the coroutine
+     * @param arg1      Any argument for the clojure fn
+     */
+    public void runCoroutine(GameObject go, IFn fn, float waitTime, object value) {
+        StartCoroutine(run (go, fn, waitTime, value));
+    }
+    
+    public IEnumerator run(GameObject go, IFn fn, float waitTime, object value) {
+        WaitForSeconds wfs = new WaitForSeconds (waitTime);
+        bool continueRunning = true;
+        while (continueRunning) {
+            continueRunning = (bool)fn.invoke(go, value);
+            yield return wfs;
+        }
+    }
 }
 
 

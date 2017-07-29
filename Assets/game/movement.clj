@@ -29,7 +29,7 @@
   [collider start end]
   (do
     (set! (. collider enabled) false)
-    (let [hit (.Linecast Physics2D start end blocking-layer)]
+    (let [hit (.Linecast UnityEngine.Physics2D start end blocking-layer)]
       (set! (. collider enabled) true)
       hit)))
 
@@ -52,8 +52,8 @@
   [go hit])
 
 (defn attempt-move!
-  [go x-dir y-dir]
+  [go x-dir y-dir cant-move-fn]
   (let [hit (move x-dir y-dir)]
     (if (= (.transform hit) nil)
       nil
-      (on-cant-move go hit))))
+      (cant-move-fn go hit))))

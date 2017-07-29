@@ -57,3 +57,6 @@
 (set-state! (object-named "Wall1") :chop-sound-1 (new UnityEngine.AudioClip))
 (set-state! (object-named "Wall1") :chop-sound-2 (new UnityEngine.AudioClip))
 
+(hook+ (object-named "Player") :start #'player-start!)
+(hook+ (object-named "Player") :update #'player-update!)
+(hook+ (object-named "Player") :on-trigger-enter2d #'player-on-trigger-enter-2d!)

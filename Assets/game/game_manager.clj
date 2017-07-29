@@ -11,9 +11,8 @@
   (setup-scene! @level
                 (state go :board-manager)))
  
-(def game-over! []
-  (set! (. (object-named "game-manager") enabled)
-        false))
+(defn game-over! []
+  (. (object-named "game-manager") (SetActive false)))
 
-(def restart! []
+(defn restart! []
   (.LoadScene UnityEngine.SceneManagement.SceneManager 0))

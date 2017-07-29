@@ -5,10 +5,10 @@
 (def epsilon (. System.Single Epsilon))
 
 (defn delta-time []
-  (.deltaTime UnityEngine.Time))
+  (. UnityEngine.Time deltaTime))
 
 (defn move-towards [start end step]
-  (.MoveTowards UnityEngine.Vector3 start end step))
+  (. UnityEngine.Vector2 (MoveTowards start end step)))
 
 (defn new-extrema [min max]
   {:minimum min :maximum max})

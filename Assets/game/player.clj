@@ -1,11 +1,11 @@
-(ns game.board
+(ns game.player
   (:use arcadia.core
         arcadia.linear
         game.core
         game.movement
         game.game-manager))
 
-(def player-food-points (atom 10))
+(def player-food-points (atom 100))
 
 (def wall-damage 1)
 (def points-per-food 10)
@@ -15,16 +15,20 @@
 (defn player-start! [go]
   (movement-start! go))
 
+(defn check-game-over! []
+  (if (<= @player-food-points 0)
+    (game-over!)))
+
 (defn damage-wall!
   "Does the damage wall behaviour, this function is full of side-effects."
   [wall loss]
   (do
-    (.. UnityEngine.SoundManager instance (RandomizeSfx
-                                           (state wall :chop-sound-1)
-                                           (state wall :chop-sound-2)))
+    (comment (.. UnityEngine.SoundManager instance (RandomizeSfx
+                                            (state wall :chop-sound-1)
+                                            (state wall :chop-sound-2))))
     (set! (. (.GetComponent wall UnityEngine.SpriteRenderer) sprite)
           (state wall :damage-sprite))
-    (update-state wall :hp (- (state wall :hp) loss))
+    (update-state! wall :hp (- (state wall :hp) loss))
     (if (<= (state wall :hp) 0)
       (.SetActive wall false))))
 
@@ -39,28 +43,24 @@
     (swap! player-food-points dec)
     (attempt-move! player x-dir y-dir player-cant-move!)
     (check-game-over!)
-    (swap! players-turn not)))
+    (comment (swap! players-turn not))))
 
 (defn player-update! [player]
   (if @players-turn
-    (let [horizontal (.GetAxisRaw UnityEngine.Input "Horizontal")
-          vertical (.GetAxisRaw UnityEngine.Input "Vertical")]
+    (let [horizontal (int (. UnityEngine.Input (GetAxisRaw "Horizontal")))
+          vertical (int (. UnityEngine.Input (GetAxisRaw "Vertical")))]
       (let [vertical (if (not= horizontal 0 ) 0 vertical)] ;; reset verticle if horizontal is anything
         (if (or (not= horizontal 0)
                 (not= vertical 0))
-          (player-attempt-move player horizontal vertical))))))
+          (player-attempt-move! player horizontal vertical))))))
 
-(defn check-game-over! []
-  (if (<= @player-food-points 0)
-    (game-over!)))
-
-(defn lose-food! [loss]
+(defn lose-food! [player loss]
   (do
     (.SetTrigger (.GetComponent player UnityEngine.Animator) "player-hit")
     (swap! player-food-points - loss)
     (check-game-over!)))
 
-(defn player-on-trigger-enter-2d [player collision]
+(defn player-on-trigger-enter-2d! [player collision]
   (if (= (.tag collision) "Exit")
     (do
       (.Invoke player restart-level-delay)

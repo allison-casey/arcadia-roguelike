@@ -16,10 +16,9 @@
 (defn smooth-movement!
   "Used as a coroutine function, provides smooth object movement to given end point"
   [go end]
-  (do
-    (let [rb2d (state go :rigid-body-2d)]
-      (.MovePosition rb2d (move-towards (.position rb2d) end (* inverse-move-time delta-time))))
-    (> (.sqrMagnitude (v3- (.position (.transform go) end)))
+  (let [rb2d (. go (GetComponent UnityEngine.Rigidbody2D))]
+    (. rb2d (MovePosition (move-towards (.position rb2d) end (* inverse-move-time (delta-time)))))
+    (> (.sqrMagnitude (v2- (.position rb2d) end))
        epsilon)))
 
 (defn line-cast!
@@ -29,7 +28,7 @@
   [collider start end]
   (do
     (set! (. collider enabled) false)
-    (let [hit (.Linecast UnityEngine.Physics2D start end blocking-layer)]
+    (let [hit (. UnityEngine.Physics2D (Linecast start end blocking-layer))]
       (set! (. collider enabled) true)
       hit)))
 
@@ -39,21 +38,19 @@
    start a smooth-movement coroutine to move the object.
    Returns the hit result"
   [go x-dir y-dir]
-  (let [collider (state go :box-collider-2d)
-        start (.position (.transform go))
-        end (v3+ start (v3 x-dir y-dir 0))
-        hit (line-cast! collider start end)]
-    (if (nil? (.transform hit))
-      (coroutine go #'smooth-movement! 0 end)
-      nil)
-    hit))
+  (let [collider (. go (GetComponent UnityEngine.BoxCollider2D))
+        start (v2 (.. go transform position x) (.. go transform position y))
+        end (v2+ (v2 (.. go transform position x) (.. go transform position y)) (v2 x-dir y-dir))]    
+    (let [hit (line-cast! collider start end)]
+      (if (nil? (.transform hit))
+        (coroutine go #'smooth-movement! 0 end))
+      hit)))
 
 (defn on-cant-move!
   [go hit])
 
 (defn attempt-move!
   [go x-dir y-dir cant-move-fn]
-  (let [hit (move x-dir y-dir)]
-    (if (= (.transform hit) nil)
-      nil
+  (let [hit (move! go x-dir y-dir)]
+    (if (not (nil? (.transform hit)))
       (cant-move-fn go hit))))

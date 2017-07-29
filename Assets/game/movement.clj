@@ -57,16 +57,3 @@
     (if (= (.transform hit) nil)
       nil
       (on-cant-move go hit))))
-
-(defn damage-wall!
-  "Does the damage wall behaviour, this function is full of side-effects."
-  [go loss]
-  (do
-    (.. UnityEngine.SoundManager instance (RandomizeSfx
-                                           (state go :chop-sound-1)
-                                           (state go :chop-sound-2)))
-    (set! (. (.GetComponent go UnityEngine.SpriteRenderer) sprite)
-          (state go :damage-sprite))
-    (update-state go :hp (- (state go :hp) loss))
-    (if (<= (state go :hp) 0)
-      (.SetActive go false))))

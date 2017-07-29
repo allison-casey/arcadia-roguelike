@@ -26,8 +26,8 @@
         wall-tiles (state-list board-manager :wall-tiles)
         food-tiles (state-list board-manager :food-tiles)
         enemy-tiles (state-list board-manager :enemy-tiles)
-        exit (state-obj board-manager :exit-ref)
-        board (state-obj board-manager :board-holder-ref)
+        exit (state board-manager :exit-ref)
+        board (state board-manager :board-holder-ref)
         enemy-count (log-b level 2)
         positions (shuffle (square-points 1 (- columns 2)
                                           1 (- rows 2)))]

@@ -10,16 +10,8 @@
 (defn move-towards [start end step]
   (.MoveTowards UnityEngine.Vector3 start end step))
 
-
-
 (defn new-extrema [min max]
   {:minimum min :maximum max})
-
-(defn get-object
-  "Gets the GameObject referenced by GameObjectRef"
-  [go-ref]
-  (.(. go-ref (GetComponent "GameObjectRef"))
-    game_object))
 
 (defn get-list
   "Gets the GameObject[] list from the GameObjectList component"
@@ -39,11 +31,6 @@
   (doall
    (for [child child-list]
      (set-parent-go! child parent))))
-
-(defn state-obj
-  "Get the GameObject referenced from the GameObjectRef with state key" 
-  ([go kw]
-   (get-object (state go kw))))
 
 (defn state-list
   "Get the GameObject[] list from the GameObjectList with state key"

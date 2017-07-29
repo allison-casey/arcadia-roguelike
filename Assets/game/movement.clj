@@ -58,3 +58,4 @@
       nil
       (on-cant-move go hit))))
 
+(defn damage-wall [])

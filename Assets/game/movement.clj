@@ -5,7 +5,9 @@
 
 (def move-time 0.1)
 (def inverse-move-time (/ 1.0 move-time))
-(def blocking-layer (. UnityEngine.LayerMask (NameToLayer "BlockingLayer")))
+(def blocking-layer
+  (bit-shift-left 1
+                  (. UnityEngine.LayerMask (NameToLayer "BlockingLayer"))))
 
 (defn movement-start! [go]
   (do
@@ -18,8 +20,9 @@
   [go end]
   (let [rb2d (. go (GetComponent UnityEngine.Rigidbody2D))]
     (. rb2d (MovePosition (move-towards (.position rb2d) end (* inverse-move-time (delta-time)))))
-    (> (.sqrMagnitude (v2- (.position rb2d) end))
-       epsilon)))
+    (if (> (.sqrMagnitude (v2- (.position rb2d) end))
+           epsilon)
+      0 -1)))
 
 (defn line-cast!
   "This function handles the awkward necessity of disabling
@@ -43,11 +46,8 @@
         end (v2+ (v2 (.. go transform position x) (.. go transform position y)) (v2 x-dir y-dir))]    
     (let [hit (line-cast! collider start end)]
       (if (nil? (.transform hit))
-        (coroutine go #'smooth-movement! 0 end))
+        (coroutine go #'smooth-movement! end))
       hit)))
-
-(defn on-cant-move!
-  [go hit])
 
 (defn attempt-move!
   [go x-dir y-dir cant-move-fn]

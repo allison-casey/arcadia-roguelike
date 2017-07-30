@@ -60,3 +60,5 @@
 (hook+ (object-named "Player") :start #'player-start!)
 (hook+ (object-named "Player") :update #'player-update!)
 (hook+ (object-named "Player") :on-trigger-enter2d #'player-on-trigger-enter-2d!)
+
+(hook+ (object-named "game-manager") :update #'game-update!)

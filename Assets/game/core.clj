@@ -114,22 +114,19 @@
 (defn coroutine
   "Function for running Unity Coroutines from Arcadia
    The given gameobject and value will be passed to the function f
-   on every loop of the coroutine, waiting the given wait time between
-   each iteration.  This function requires that a single Corouiner component
-   is added somewhere in the scene.  The given function f should return a boolean
-   of false when the coroutine should stop."
-  [gameobject f wait value]
-  (.. Coroutiner instance (runCoroutine gameobject f wait value)))
+   on every loop of the coroutine, waiting the given wait time returned by the
+   given function f(0 for no wait time). This function requires that a single Corouiner component
+   is added somewhere in the scene.  The given function f should return a -1
+   when the coroutine should stop."
+  [gameobject f value]
+  (.. Coroutiner instance (runCoroutine gameobject f value)))
 
 
-(defn collision-example [go collision]
-  (arcadia.core/log (.. go name)
-       " collided with "
-       (.. collision gameObject name)
-       " at velocity "
-       (.. collision relativeVelocity)))
+(defn abs [n]
+  (. UnityEngine.Mathf (Abs n)))
 
-(defn rotate-example [gameobject] 
-  (.. gameobject transform (Rotate 0 4 0)))
-
-
+(def enemies (atom []))
+(def players-turn (atom true))
+(def game-manager (object-named "game-manager"))
+(defn game-over! []
+  (. game-manager (SetActive false)))

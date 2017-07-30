@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using clojure.lang;
 
@@ -10,7 +11,7 @@ using clojure.lang;
  * 
  * (coroutine go #'the-fn 1.0)
  * 
- * The Clojure function should return a boolean of false to signal that the coroutine should stop
+ * The Clojure function should return a number of seconds to wait or a -1 to signal that the coroutine should stop
  * 
  */
 public class Coroutiner : MonoBehaviour
@@ -32,16 +33,17 @@ public class Coroutiner : MonoBehaviour
      * @param waitTime  The wait time in seconds to pause the coroutine
      * @param arg1      Any argument for the clojure fn
      */
-    public void runCoroutine(GameObject go, IFn fn, float waitTime, object value) {
-        StartCoroutine(run (go, fn, waitTime, value));
+    public void runCoroutine(GameObject go, IFn fn, object value) {
+        StartCoroutine(run (go, fn, value));
     }
     
-    public IEnumerator run(GameObject go, IFn fn, float waitTime, object value) {
-        WaitForSeconds wfs = new WaitForSeconds (waitTime);
-        bool continueRunning = true;
-        while (continueRunning) {
-            continueRunning = (bool)fn.invoke(go, value);
-            yield return wfs;
+    public IEnumerator run(GameObject go, IFn fn, object value) {
+        while (true) {
+            object waitTime = fn.invoke(go, value);
+            if (Convert.ToInt32(waitTime) == -1) { // signalled to stop
+                break;
+            }
+            yield return new WaitForSeconds(Convert.ToSingle(waitTime));
         }
     }
 }

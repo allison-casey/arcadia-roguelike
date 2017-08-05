@@ -44,10 +44,6 @@
 (set-state! (object-named "board-manager") :exit-ref (new UnityEngine.GameObject))
 (set-state! (object-named "board-manager") :board-holder-ref (new UnityEngine.GameObject))
 
-;; Game Manager State
-(set-state! (object-named "game-manager") :board-manager (object-named "board-manager"))
-(set-state! (object-named "game-manager") :level 3)
-
 (hook+ (object-named "board-manager") :start #'board-start)
 (hook+ (object-named "game-manager") :awake #'game-awake)
 

@@ -6,6 +6,7 @@
         game.sound))
 
 (def player-food-points (atom 100))
+(def touch-origin (atom (v2 -1 -1)))
 
 (def wall-damage 1)
 (def points-per-food 10)
@@ -53,14 +54,42 @@
     (check-game-over! player)
     (reset! players-turn false)))
 
+(defn direction-mobile []
+  (if (> (. UnityEngine.Input touchCount) 0)
+    (let [my-touch (nth (. UnityEngine.Input touches) 0)]
+      (if (= (. my-touch phase) (. UnityEngine.TouchPhase Began))
+        (do
+          (reset! touch-origin (. my-touch position))
+          {:horizontal 0 :vertical 0})
+        (if (and (= (. my-touch phase) (. UnityEngine.TouchPhase Ended))
+                 (>= (. @touch-origin x) 0))
+          (let [touch-end (. my-touch position)]
+            (let [x (- (. touch-end x) (. @touch-origin x))
+                  y (- (. touch-end y) (. @touch-origin y))]
+              (reset! touch-origin (v2 -1 -1))
+              (if (> (abs x) (abs y))
+                {:horizontal (if (> x 0) 1 -1) :vertical 0}
+                {:horizontal 0 :vertical (if (> y 0) 1 -1)})))
+          {:horizontal 0 :vertical 0})))
+    {:horizontal 0 :vertical 0}))
+
+(defn direction-pc []
+  (let [horizontal (int (. UnityEngine.Input (GetAxisRaw "Horizontal")))
+        vertical (int (. UnityEngine.Input (GetAxisRaw "Vertical")))]
+    (let [vertical (if (not= horizontal 0 ) 0 vertical)] ;; reset verticle if horizontal is anything
+      {:horizontal horizontal :vertical vertical})))
+
+(defn get-player-input []
+  (if (is-mobile?)
+    (direction-mobile)
+    (direction-pc)))
+
 (defn player-update! [player]
   (if @players-turn
-    (let [horizontal (int (. UnityEngine.Input (GetAxisRaw "Horizontal")))
-          vertical (int (. UnityEngine.Input (GetAxisRaw "Vertical")))]
-      (let [vertical (if (not= horizontal 0 ) 0 vertical)] ;; reset verticle if horizontal is anything
-        (if (or (not= horizontal 0)
-                (not= vertical 0))
-          (player-attempt-move! player horizontal vertical))))))
+    (let [direction (get-player-input)]
+      (if (or (not= (:horizontal direction) 0)
+              (not= (:vertical direction) 0))
+        (player-attempt-move! player (:horizontal direction) (:vertical direction))))))
 
 (defn lose-food! [player loss]
   (do

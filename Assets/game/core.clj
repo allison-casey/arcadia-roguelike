@@ -4,6 +4,10 @@
 
 (def epsilon (. System.Single Epsilon))
 
+(defn is-mobile? []
+  (or (= (. UnityEngine.Application platform) (. UnityEngine.RuntimePlatform Android))
+      (= (. UnityEngine.Application platform) (. UnityEngine.RuntimePlatform IPhonePlayer))))
+
 (defn delta-time []
   (. UnityEngine.Time deltaTime))
 

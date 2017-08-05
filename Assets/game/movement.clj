@@ -52,5 +52,7 @@
 (defn attempt-move!
   [go x-dir y-dir cant-move-fn]
   (let [hit (move! go x-dir y-dir)]
-    (if (not (nil? (.transform hit)))
-      (cant-move-fn go hit))))
+    (let [can-move (nil? (.transform hit))]
+      (if (not can-move)
+        (cant-move-fn go hit))
+      can-move)))

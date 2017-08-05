@@ -153,6 +153,6 @@
   (.. UnityEngine.SceneManagement.SceneManager (LoadScene 0)))
 (defn game-over! []
   (do
-    (set! (. @level-text text) (str "After" @level " days, you starved."))
+    (set! (. @level-text text) (str "After " @level " days, you starved."))
     (.SetActive @level-image true)
-    (. game-manager (SetActive false))))
+    (.SetActive (object-named "game-manager") false)))

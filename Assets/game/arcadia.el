@@ -59,3 +59,11 @@
 
 (hook+ (object-named "game-manager") :update #'game-update!)
 (hook+ (object-named "game-manager") :on-level-was-loaded #'game-on-level-was-loaded!)
+
+(set-state! (object-named "Player") :move-sound-1 (new UnityEngine.AudioClip))
+(set-state! (object-named "Player") :move-sound-2 (new UnityEngine.AudioClip))
+(set-state! (object-named "Player") :drink-sound-1 (new UnityEngine.AudioClip))
+(set-state! (object-named "Player") :drink-sound-2 (new UnityEngine.AudioClip))
+(set-state! (object-named "Player") :eat-sound-1 (new UnityEngine.AudioClip))
+(set-state! (object-named "Player") :eat-sound-2 (new UnityEngine.AudioClip))
+(set-state! (object-named "Player") :game-over-sound (new UnityEngine.AudioClip))

@@ -2,7 +2,8 @@
   (:use arcadia.core
         arcadia.linear
         game.core
-        game.movement))
+        game.movement
+        game.sound))
 
 (def player-food-points (atom 100))
 
@@ -18,17 +19,18 @@
     (reset! food-text (. (object-named "FoodText") (GetComponent "Text")))
     (movement-start! go)))
 
-(defn check-game-over! []
+(defn check-game-over! [player]
   (if (<= @player-food-points 0)
-    (game-over!)))
+    (do
+      (game-over!)
+      (play-single (state player :game-over-sound))
+      (.Stop (music-source)))))
 
 (defn damage-wall!
   "Does the damage wall behaviour, this function is full of side-effects."
   [wall loss]
   (do
-    (comment (.. UnityEngine.SoundManager instance (RandomizeSfx
-                                            (state wall :chop-sound-1)
-                                            (state wall :chop-sound-2))))
+    (randomize-sfx [(state wall :chop-sound-1) (state wall :chop-sound-2)])
     (set! (. (.GetComponent wall UnityEngine.SpriteRenderer) sprite)
           (state wall :damage-sprite))
     (set-state! wall :hp (- (state wall :hp) loss))
@@ -46,8 +48,9 @@
   (do
     (swap! player-food-points dec)
     (set! (. @food-text text) (str "Food: " @player-food-points))
-    (attempt-move! player x-dir y-dir player-cant-move!)
-    (check-game-over!)
+    (if (attempt-move! player x-dir y-dir player-cant-move!)
+      (randomize-sfx [(state player :move-sound-1) (state player :move-sound-2)]))
+    (check-game-over! player)
     (reset! players-turn false)))
 
 (defn player-update! [player]
@@ -64,7 +67,7 @@
     (.SetTrigger (.GetComponent player UnityEngine.Animator) "player-hit")
     (swap! player-food-points - loss)
     (set! (. @food-text text) (str "-" loss " Food: " @player-food-points))
-    (check-game-over!)))
+    (check-game-over! player)))
 
 (defn player-on-trigger-enter-2d! [player collision]
   (if (= (.tag collision) "Exit")
@@ -75,10 +78,12 @@
       (do
         (swap! player-food-points + points-per-food)
         (set! (. @food-text text) (str "+" points-per-food " Food: " @player-food-points))
+        (randomize-sfx [(state player :eat-sound-1) (state player :eat-sound-2)])
         (.SetActive (.gameObject collision) false))
       (if (= (.tag collision) "Soda")
         (do
           (swap! player-food-points + points-per-soda)
           (set! (. @food-text text) (str "+" points-per-soda " Food: " @player-food-points))
+          (randomize-sfx [(state player :drink-sound-1) (state player :drink-sound-2)])
           (.SetActive (.gameObject collision) false))
         ))))

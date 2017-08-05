@@ -3,9 +3,9 @@
         arcadia.linear
         game.core
         game.movement
-        game.player))
+        game.player
+        game.sound))
 
-(def player-damage 1)
 (def target (atom nil))
 
 (defn enemy-start! [go]
@@ -19,14 +19,15 @@
   (let [player (.. hit transform gameObject)]
     (if (= (.tag player) "Player")
       (do
-        (lose-food! player player-damage)
-        (.SetTrigger (.GetComponent enemy UnityEngine.Animator) "enemy-attack")))))
+        (lose-food! player (state enemy :player-damage))        
+        (.SetTrigger (.GetComponent enemy UnityEngine.Animator) "enemy-attack")
+        (randomize-sfx [(state enemy :attack-sound-1) (state enemy :attack-sound-2)])))))
 
 (defn enemy-attempt-move! [enemy x-dir y-dir]
   (if (state enemy :skip-move)
     (set-state! enemy :skip-move false)
     (do
-      (attempt-move! enemy x-dir y-dir enemy-cant-move!)
+      (attempt-move! enemy x-dir y-dir enemy-cant-move!)      
       (set-state! enemy :skip-move true))))
 
 (defn move-enemy! [enemy]

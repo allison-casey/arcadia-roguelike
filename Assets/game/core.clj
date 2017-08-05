@@ -13,6 +13,11 @@
 (defn new-extrema [min max]
   {:minimum min :maximum max})
 
+(defn activate! [go]
+  (.SetActive go true))
+(defn deactivate! [go]
+  (.SetActive go false))
+
 (defn get-list
   "Gets the GameObject[] list from the GameObjectList component"
   [go-list-ref]
@@ -121,12 +126,33 @@
   [gameobject f value]
   (.. Coroutiner instance (runCoroutine gameobject f value)))
 
+(defn invoke
+  "Runs a Unity like Invoke on the function once with the given gameobject ref 
+   and value after the specified wait-time.  Use this when you need to call a function
+   once after a set delay."
+  [gameobject f wait-time value]
+  (.. Coroutiner instance (runInvoke gameobject f wait-time value)))
+
+(defn sceneLoadedHook+
+  "Adds a sceneLoaded event listener to the SceneManager"
+  [gameobject f]
+  (.. Coroutiner instance (sceneLoadedHook gameobject f)))
 
 (defn abs [n]
   (. UnityEngine.Mathf (Abs n)))
 
 (def enemies (atom []))
 (def players-turn (atom true))
-(def game-manager (object-named "game-manager"))
+(def doing-setup (atom true))
+(def game-manager (atom nil))
+(def level-text (atom nil))
+(def level-image (atom nil))
+(def level (atom 0))
+
+(defn restart! [go value]
+  (.. UnityEngine.SceneManagement.SceneManager (LoadScene 0)))
 (defn game-over! []
-  (. game-manager (SetActive false)))
+  (do
+    (set! (. @level-text text) (str "After" @level " days, you starved."))
+    (.SetActive @level-image true)
+    (. game-manager (SetActive false))))

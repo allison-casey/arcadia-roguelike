@@ -7,18 +7,40 @@
         game.board))
 
 (def turn-delay 0.1)
-(def level (atom 3))
+(def level-start-delay 2.0)
 
 (def enemies-moving (atom false))
-
-(def enemies-to-move (atom []))
 (def waiting-no-enemies (atom false))
+(def enemies-to-move (atom []))
+
+(defn hide-level-image! [go value]
+  (do
+    (.SetActive @level-image false)
+    (reset! doing-setup false)))
+
+(defn init! [go]
+  (do
+    (reset! doing-setup true)
+    (reset! level-text (. (object-named "LevelText") (GetComponent "Text")))    
+    (reset! level-image (object-named "LevelImage"))
+    (set! (. @level-text text) (str "Day " @level))
+    (.SetActive @level-image true)
+    (invoke go #'hide-level-image! level-start-delay nil)
+    (reset! enemies [])
+    (setup-scene! @level
+                  (object-named "board-manager"))))
+
+(defn game-on-level-was-loaded! [go index]
+  (do
+    (swap! level inc)
+    (init! go)))
 
 (defn game-awake [go]
   (do
-    (reset! enemies [])
-    (setup-scene! @level
-                  (state go :board-manager))))
+    (if (= @game-manager nil)
+      (do
+        (reset! game-manager (object-named "game-manager"))
+        (sceneLoadedHook+ @game-manager #'game-on-level-was-loaded!)))))
 
 (defn move-enemies!
   "Used as a coroutine function, moves all enemies"
@@ -47,8 +69,6 @@
 
 (defn game-update! [go]
   (if (not (or @players-turn
-               @enemies-moving))
+               @enemies-moving
+               @doing-setup))
     (coroutine go #'move-enemies! nil)))
-
-(defn restart! []
-  (.LoadScene UnityEngine.SceneManagement.SceneManager 0))

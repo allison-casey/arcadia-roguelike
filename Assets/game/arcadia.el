@@ -62,3 +62,4 @@
 (hook+ (object-named "Player") :on-trigger-enter2d #'player-on-trigger-enter-2d!)
 
 (hook+ (object-named "game-manager") :update #'game-update!)
+(hook+ (object-named "game-manager") :on-level-was-loaded #'game-on-level-was-loaded!)

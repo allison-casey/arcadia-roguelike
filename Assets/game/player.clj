@@ -11,8 +11,12 @@
 (def points-per-soda 20)
 (def restart-level-delay 1.0)
 
+(def food-text (atom nil))
+
 (defn player-start! [go]
-  (movement-start! go))
+  (do
+    (reset! food-text (. (object-named "FoodText") (GetComponent "Text")))
+    (movement-start! go)))
 
 (defn check-game-over! []
   (if (<= @player-food-points 0)
@@ -41,6 +45,7 @@
 (defn player-attempt-move! [player x-dir y-dir]
   (do
     (swap! player-food-points dec)
+    (set! (. @food-text text) (str "Food: " @player-food-points))
     (attempt-move! player x-dir y-dir player-cant-move!)
     (check-game-over!)
     (reset! players-turn false)))
@@ -58,19 +63,22 @@
   (do
     (.SetTrigger (.GetComponent player UnityEngine.Animator) "player-hit")
     (swap! player-food-points - loss)
+    (set! (. @food-text text) (str "-" loss " Food: " @player-food-points))
     (check-game-over!)))
 
 (defn player-on-trigger-enter-2d! [player collision]
   (if (= (.tag collision) "Exit")
     (do
-      (.Invoke player restart-level-delay)
-      (set! (. player enabled) false))
+      (invoke player #'restart! restart-level-delay nil)
+      (deactivate! player))
     (if (= (.tag collision) "Food")
       (do
         (swap! player-food-points + points-per-food)
+        (set! (. @food-text text) (str "+" points-per-food " Food: " @player-food-points))
         (.SetActive (.gameObject collision) false))
       (if (= (.tag collision) "Soda")
         (do
           (swap! player-food-points + points-per-soda)
+          (set! (. @food-text text) (str "+" points-per-soda " Food: " @player-food-points))
           (.SetActive (.gameObject collision) false))
         ))))

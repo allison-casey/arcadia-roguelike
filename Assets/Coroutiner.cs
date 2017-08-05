@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using clojure.lang;
+using UnityEngine.SceneManagement;
 
 /**
  * Allows for a simple way to execute coroutines from Arcadia
@@ -17,7 +18,7 @@ using clojure.lang;
 public class Coroutiner : MonoBehaviour
 {
     public static Coroutiner instance;
-
+	   
     public void Awake() {
         if (instance != null) {
             Destroy(gameObject);
@@ -39,6 +40,8 @@ public class Coroutiner : MonoBehaviour
     
     public IEnumerator run(GameObject go, IFn fn, object value) {
         while (true) {
+			if (go == null)
+				break;
             object waitTime = fn.invoke(go, value);
             if (Convert.ToInt32(waitTime) == -1) { // signalled to stop
                 break;
@@ -46,6 +49,29 @@ public class Coroutiner : MonoBehaviour
             yield return new WaitForSeconds(Convert.ToSingle(waitTime));
         }
     }
+
+    /**
+     * Emulates a Unity Invoke call on a clojure function using a run once coroutine
+     */
+    public void runInvoke(GameObject go, IFn fn, float time, object value) {
+        StartCoroutine(invokeIFn(go, fn, time, value));
+    }
+
+    /**
+     * Emulates an Invoke call using a delayed coroutine that just runs once
+     */
+    public IEnumerator invokeIFn(GameObject go, IFn fn, float waitTime, object value) {
+        yield return new WaitForSeconds(waitTime);
+        fn.invoke(go, value);
+    }
+
+
+	public void sceneLoadedHook(GameObject go, IFn fn) {
+		// TODO: Add some event listener clear for this
+		SceneManager.sceneLoaded += delegate(Scene arg0, LoadSceneMode arg1) {
+			fn.invoke(go, arg0.buildIndex);
+		};
+	}
 }
 
 

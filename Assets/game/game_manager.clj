@@ -4,7 +4,8 @@
         game.core
         game.movement
         game.enemy
-        game.board))
+        game.board
+        game.unity))
 
 (def turn-delay 0.1)
 (def level-start-delay 2.0)

@@ -3,10 +3,10 @@
         arcadia.linear
         game.core
         game.movement
-        game.sound))
+        game.sound
+        game.unity))
 
 (def player-food-points (atom 100))
-(def touch-origin (atom (v2 -1 -1)))
 
 (def wall-damage 1)
 (def points-per-food 10)
@@ -14,6 +14,8 @@
 (def restart-level-delay 1.0)
 
 (def food-text (atom nil))
+
+(def touch-origin (atom (v2 -1 -1)))
 
 (defn player-start! [go]
   (do

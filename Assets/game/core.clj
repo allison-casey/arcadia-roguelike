@@ -1,58 +1,48 @@
 (ns game.core
   (:use arcadia.core
-        arcadia.linear))
+        arcadia.linear
+        game.unity))
 
-(def epsilon (. System.Single Epsilon))
 
-(defn is-mobile? []
-  (or (= (. UnityEngine.Application platform) (. UnityEngine.RuntimePlatform Android))
-      (= (. UnityEngine.Application platform) (. UnityEngine.RuntimePlatform IPhonePlayer))))
 
-(defn delta-time []
-  (. UnityEngine.Time deltaTime))
 
-(defn move-towards [start end step]
-  (. UnityEngine.Vector2 (MoveTowards start end step)))
-
-(defn new-extrema [min max]
+(defn new-extrema
+  "Builds a map containing a min/max range."
+  [min max]
   {:minimum min :maximum max})
-
-(defn activate! [go]
-  (.SetActive go true))
-(defn deactivate! [go]
-  (.SetActive go false))
-
-(defn get-list
-  "Gets the GameObject[] list from the GameObjectList component"
-  [go-list-ref]
-  (. (. go-list-ref (GetComponent "GameObjectList"))
-     game_objects))
-
-(defn set-parent-go!
-  "Convenience method for parenting at the GameObject level"
-  [child-go parent-go]
-  (. (. child-go transform)
-     (SetParent (. parent-go transform))))
-
-(defn set-parent-go-list!
-  "Same as set-parent-go! just works on vectors"
-  [child-list parent]
-  (doall
-   (for [child child-list]
-     (set-parent-go! child parent))))
-
-(defn state-list
-  "Get the GameObject[] list from the GameObjectList with state key"
-  ([go kw]
-   (get-list (state go kw))))
-
-(defn qidentity [] (.. UnityEngine.Quaternion identity))
 
 (defn rand-int-range [min max]
   (+ (rand-int (- max min)) min))
 
 (defn rand-int-extrema [extrema]
   (rand-int-range (:minimum extrema) (:maximum extrema)))
+
+
+
+(defn get-list
+  "Gets the GameObject[] list from the GameObjectList helper component"
+  [go-list-ref]
+  (. (. go-list-ref (GetComponent "GameObjectList"))
+     game_objects))
+
+(defn state-list
+  "Get the GameObject[] list from the GameObjectList 
+   helper component with the state keyword"
+  ([go kw]
+   (get-list (state go kw))))
+
+
+
+(defn set-parent-go-list!
+  "Sets the given parent gameobject as the parent of each child gameobject in the list"
+  [child-list parent]
+  (doall
+   (for [child child-list]
+     (set-parent-go! child parent))))
+
+
+
+;; Functions for generating the game map data
 
 (defn random-selection
   "Takes a range of potential objects and a minima 
@@ -64,12 +54,6 @@
       (if (or (>= total object-count) (= object-count 0))
         result             
         (recur (inc total) (conj result (nth objects (rand-int (count objects)))))))))
-
-(defn log-b
-  "Wrapper for the Unity Mathf.Log function, calls log n to base b"
-  [n b]
-  (int (.. UnityEngine.Mathf (Log n b))))
-
 
 (defn line-points
   "Basic function to generate a line of points"
@@ -89,11 +73,15 @@
                      (line-points min-x (+ min-y 1) 0 1 (- height 2)))))) ;; left line
 
 (defn square-points
-  "Generates a square/grid of positions given the x and y extrema"
+  "Generates a square/grid of positions given the x and y extrema/range"
   [min-x max-x min-y max-y]
   (into [] (for [col (range min-x max-x)
                  row (range min-y max-y)]
              (v3 col row 0))))
+
+
+
+;; These two functions take the data generated for the map and instantiate each of the objects
 
 (defn layout-objects!
   "Instantiates each GameObject at the given point, returns instantiated gameobjects"
@@ -108,8 +96,8 @@
              (conj game-objects (instantiate (last objects) (last positions) (qidentity)))))))
 
 (defn layout-objects-lists!
-  "Takes multiple object lists and calls layout-objects on each carrying
-   over the remaining points to each call"
+  "Takes a list of game object lists and calls layout-objects on each carrying
+   over the remaining points where they can be spawned on the map to each call"
   [object-lists points]
   (if (= (count object-lists) 0)
     nil
@@ -120,41 +108,23 @@
         (recur (pop object-lists) (subvec points object-length))))))
 
 
-(defn coroutine
-  "Function for running Unity Coroutines from Arcadia
-   The given gameobject and value will be passed to the function f
-   on every loop of the coroutine, waiting the given wait time returned by the
-   given function f(0 for no wait time). This function requires that a single Corouiner component
-   is added somewhere in the scene.  The given function f should return a -1
-   when the coroutine should stop."
-  [gameobject f value]
-  (.. Coroutiner instance (runCoroutine gameobject f value)))
 
-(defn invoke
-  "Runs a Unity like Invoke on the function once with the given gameobject ref 
-   and value after the specified wait-time.  Use this when you need to call a function
-   once after a set delay."
-  [gameobject f wait-time value]
-  (.. Coroutiner instance (runInvoke gameobject f wait-time value)))
-
-(defn sceneLoadedHook+
-  "Adds a sceneLoaded event listener to the SceneManager"
-  [gameobject f]
-  (.. Coroutiner instance (sceneLoadedHook gameobject f)))
-
-(defn abs [n]
-  (. UnityEngine.Mathf (Abs n)))
-
-(def enemies (atom []))
-(def players-turn (atom true))
-(def doing-setup (atom true))
+;; Core state thats needed sometimes in different namespaces
 (def game-manager (atom nil))
 (def level-text (atom nil))
 (def level-image (atom nil))
+(def enemies (atom []))
+
+(def players-turn (atom true))
+(def doing-setup (atom true))
 (def level (atom 0))
+
+
+
 
 (defn restart! [go value]
   (.. UnityEngine.SceneManagement.SceneManager (LoadScene 0)))
+
 (defn game-over! []
   (do
     (set! (. @level-text text) (str "After " @level " days, you starved."))

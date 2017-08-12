@@ -1,7 +1,8 @@
 (ns game.movement
   (:use arcadia.core
         arcadia.linear
-        game.core))
+        game.core
+        game.unity))
 
 (def move-time 0.1)
 (def inverse-move-time (/ 1.0 move-time))

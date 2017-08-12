@@ -1,7 +1,8 @@
 (ns game.board
   (:use arcadia.core
         arcadia.linear
-        game.core))
+        game.core
+        game.unity))
 
 (def columns 8)
 (def rows 8)

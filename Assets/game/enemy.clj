@@ -4,7 +4,8 @@
         game.core
         game.movement
         game.player
-        game.sound))
+        game.sound
+        game.unity))
 
 (def target (atom nil))
 

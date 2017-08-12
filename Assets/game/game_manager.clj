@@ -5,7 +5,8 @@
         game.movement
         game.enemy
         game.board
-        game.unity))
+        game.unity
+        game.sound))
 
 (def turn-delay 0.1)
 (def level-start-delay 2.0)
@@ -13,6 +14,9 @@
 (def enemies-moving (atom false))
 (def waiting-no-enemies (atom false))
 (def enemies-to-move (atom []))
+(def game-over (atom false))
+
+(def player-go (atom nil))
 
 (defn hide-level-image! [go value]
   (do
@@ -33,6 +37,10 @@
 
 (defn game-on-level-was-loaded! [go index]
   (do
+    (reset! enemies-moving false)
+    (reset! waiting-no-enemies false)
+    (reset! game-over false)
+    (reset! player-go (object-named "Player"))
     (swap! level inc)
     (init! go)))
 
@@ -68,8 +76,35 @@
             (reset! waiting-no-enemies false)
             -1))))))
 
+(defn restart-game! []
+  (do
+    (reset! level 0)
+    (reset! player-food-points 100)
+    (reset! players-turn true)
+    (reset! doing-setup true)
+    (.Play (music-source))
+    (restart! nil nil)))
+
+(defn game-over! []
+  (if (not @game-over)
+    (do
+      (set! (. @level-text text) (str "After " @level " days, you starved."))
+      (.SetActive @level-image true)
+      (reset! game-over true))))
+
+(defn check-game-over! [player]
+  (if (<= @player-food-points 0)
+    (do
+      (play-single (state player :game-over-sound))
+      (.Stop (music-source))
+      (game-over!))))
+
 (defn game-update! [go]
-  (if (not (or @players-turn
-               @enemies-moving
-               @doing-setup))
-    (coroutine go #'move-enemies! nil)))
+  (if (not @game-over)
+    (do (if (not (or @players-turn
+                     @enemies-moving
+                     @doing-setup))
+          (coroutine go #'move-enemies! nil))
+        (check-game-over! @player-go))
+    (if (any-key)
+      (restart-game!))))

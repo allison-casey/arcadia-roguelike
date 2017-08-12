@@ -3,9 +3,6 @@
         arcadia.linear
         game.unity))
 
-
-
-
 (defn new-extrema
   "Builds a map containing a min/max range."
   [min max]
@@ -107,26 +104,17 @@
         (layout-objects! object-list (subvec points 0 object-length))
         (recur (pop object-lists) (subvec points object-length))))))
 
-
-
 ;; Core state thats needed sometimes in different namespaces
 (def game-manager (atom nil))
 (def level-text (atom nil))
 (def level-image (atom nil))
 (def enemies (atom []))
 
+(def player-food-points (atom 100))
 (def players-turn (atom true))
 (def doing-setup (atom true))
 (def level (atom 0))
 
 
-
-
 (defn restart! [go value]
   (.. UnityEngine.SceneManagement.SceneManager (LoadScene 0)))
-
-(defn game-over! []
-  (do
-    (set! (. @level-text text) (str "After " @level " days, you starved."))
-    (.SetActive @level-image true)
-    (.SetActive (object-named "game-manager") false)))

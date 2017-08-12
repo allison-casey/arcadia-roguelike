@@ -40,6 +40,9 @@
 (defn abs [n]
   (. UnityEngine.Mathf (Abs n)))
 
+(defn any-key []
+  (. UnityEngine.Input anyKey))
+
 (defn coroutine
   "Function for running Unity Coroutines from Arcadia
    The given gameobject and value will be passed to the function f

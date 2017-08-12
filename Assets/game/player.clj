@@ -6,8 +6,6 @@
         game.sound
         game.unity))
 
-(def player-food-points (atom 100))
-
 (def wall-damage 1)
 (def points-per-food 10)
 (def points-per-soda 20)
@@ -21,13 +19,6 @@
   (do
     (reset! food-text (. (object-named "FoodText") (GetComponent "Text")))
     (movement-start! go)))
-
-(defn check-game-over! [player]
-  (if (<= @player-food-points 0)
-    (do
-      (game-over!)
-      (play-single (state player :game-over-sound))
-      (.Stop (music-source)))))
 
 (defn damage-wall!
   "Does the damage wall behaviour, this function is full of side-effects."
@@ -53,7 +44,6 @@
     (set! (. @food-text text) (str "Food: " @player-food-points))
     (if (attempt-move! player x-dir y-dir player-cant-move!)
       (randomize-sfx [(state player :move-sound-1) (state player :move-sound-2)]))
-    (check-game-over! player)
     (reset! players-turn false)))
 
 (defn direction-mobile []
@@ -97,8 +87,7 @@
   (do
     (.SetTrigger (.GetComponent player UnityEngine.Animator) "player-hit")
     (swap! player-food-points - loss)
-    (set! (. @food-text text) (str "-" loss " Food: " @player-food-points))
-    (check-game-over! player)))
+    (set! (. @food-text text) (str "-" loss " Food: " @player-food-points))))
 
 (defn player-on-trigger-enter-2d! [player collision]
   (if (= (.tag collision) "Exit")
